@@ -7,7 +7,7 @@ const api = axios.create({
   },
 })
 
-// Request interceptor (e.g., attach auth tokens)
+// Request interceptor — attach auth token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token')
@@ -19,13 +19,19 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
-// Response interceptor (e.g., handle 401s)
+// Response interceptor — handle 401s
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      // Redirect to login if needed
+      // Don't redirect if we're already on an auth page
+      const isAuthEndpoint = error.config?.url?.includes('/users/login') ||
+                             error.config?.url?.includes('/users/register')
+      if (!isAuthEndpoint) {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

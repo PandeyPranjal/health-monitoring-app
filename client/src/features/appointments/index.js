@@ -1,2 +1,1 @@
-// Feature: Appointments
-// Components, hooks, and services for doctor appointment booking
+export { default as AppointmentsPage } from './AppointmentsPage'

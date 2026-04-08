@@ -8,11 +8,13 @@ dist/
 build/
 *.egg
 db.sqlite3
+db.sqlite3-journal
 
 # Virtual environment
 venv/
 env/
 .venv/
+.env/
 
 # Node
 node_modules/
@@ -28,12 +30,25 @@ client/dist/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# Environment variables
+# Environment variables (NEVER commit secrets)
 .env
 .env.local
 .env.*.local
+!.env.example
+
+# Django
+*.log
+staticfiles/
+media/
+
+# Coverage / Testing
+htmlcov/
+.coverage
+.pytest_cache/
