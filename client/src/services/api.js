@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -47,8 +47,8 @@ api.interceptors.response.use(
 
     // If 401, not a retry, and not an auth endpoint
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-      const isAuthEndpoint = originalRequest.url?.includes('/users/login') ||
-        originalRequest.url?.includes('/users/register')
+      const isAuthEndpoint = originalRequest.url?.includes('/api/users/login') ||
+        originalRequest.url?.includes('/api/users/register')
 
       if (isAuthEndpoint) return Promise.reject(error)
 
@@ -76,7 +76,7 @@ api.interceptors.response.use(
 
       try {
         // Attempt token refresh
-        const { data } = await axios.post('/api/users/token/refresh/', {
+        const { data } = await api.post('/api/users/token/refresh/', {
           refresh: refreshToken
         })
 

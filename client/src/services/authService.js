@@ -10,7 +10,7 @@ const authService = {
    * @returns {Object} { message, user, tokens }
    */
   register: async (data) => {
-    const response = await api.post('/users/register/', data)
+    const response = await api.post('/api/users/register/', data)
     return response.data
   },
 
@@ -20,7 +20,7 @@ const authService = {
    * @returns {Object} { access, refresh, user }
    */
   login: async (credentials) => {
-    const response = await api.post('/users/login/', credentials)
+    const response = await api.post('/api/users/login/', credentials)
     return response.data
   },
 
@@ -29,7 +29,7 @@ const authService = {
    * @param {string} refreshToken
    */
   logout: async (refreshToken) => {
-    const response = await api.post('/users/logout/', { refresh: refreshToken })
+    const response = await api.post('/api/users/logout/', { refresh: refreshToken })
     return response.data
   },
 
@@ -38,7 +38,7 @@ const authService = {
    * @returns {Object} user profile data
    */
   getProfile: async () => {
-    const response = await api.get('/users/profile/')
+    const response = await api.get('/api/users/profile/')
     return response.data
   },
 
@@ -47,7 +47,7 @@ const authService = {
    * @param {Object} data - fields to update
    */
   updateProfile: async (data) => {
-    const response = await api.patch('/users/profile/', data)
+    const response = await api.patch('/api/users/profile/', data)
     return response.data
   },
 
@@ -57,7 +57,7 @@ const authService = {
    * @returns {Object} { access }
    */
   refreshToken: async (refreshToken) => {
-    const response = await api.post('/users/token/refresh/', { refresh: refreshToken })
+    const response = await api.post('/api/users/token/refresh/', { refresh: refreshToken })
     return response.data
   },
 
