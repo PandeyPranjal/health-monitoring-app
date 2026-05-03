@@ -36,6 +36,19 @@ class User(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='patient')
 
+    HEALTH_GOAL_CHOICES = [
+        ('weight_loss', 'Weight Loss'),
+        ('muscle_gain', 'Muscle Gain'),
+        ('better_sleep', 'Better Sleep'),
+        ('heart_health', 'Heart Health'),
+        ('athletic_perf', 'Athletic Performance'),
+        ('maintenance', 'Maintenance'),
+    ]
+    health_goal = models.CharField(
+        max_length=20, choices=HEALTH_GOAL_CHOICES, blank=True, default=''
+    )
+    onboarding_completed = models.BooleanField(default=False)
+
     # ── Timestamps ──────────────────────────────────
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -112,6 +112,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'height_cm',
             'weight_kg',
             'blood_type',
+            'health_goal',
+            'onboarding_completed',
             'role',
             'date_joined',
             'updated_at',

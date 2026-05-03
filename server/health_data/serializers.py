@@ -10,6 +10,42 @@ class HealthDataSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(source='user.username', read_only=True)
 
+    # ── Strict Validations ─────────────────────────────────
+    heart_rate = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=30,
+        max_value=220,
+        error_messages={
+            'min_value': 'Heart rate must be at least 30.',
+            'max_value': 'Heart rate cannot exceed 220.',
+            'invalid': 'A valid number is required. Empty strings are not permitted.',
+            'null': 'Value cannot be null if provided.',
+        }
+    )
+    steps = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        min_value=0,
+        error_messages={
+            'min_value': 'Steps cannot be negative.',
+            'invalid': 'A valid number is required. Empty strings are not permitted.',
+        }
+    )
+    sleep_hours = serializers.DecimalField(
+        required=False,
+        allow_null=True,
+        max_digits=4,
+        decimal_places=2,
+        min_value=0,
+        max_value=24,
+        error_messages={
+            'min_value': 'Sleep hours cannot be negative.',
+            'max_value': 'Sleep hours cannot exceed 24.',
+            'invalid': 'A valid number is required. Empty strings are not permitted.',
+        }
+    )
+
     class Meta:
         model = HealthData
         fields = [
