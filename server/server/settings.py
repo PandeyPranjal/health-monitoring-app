@@ -125,7 +125,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = BASE_DIR / 'static/'
+STATIC_URL = 'static/'   #HERE IS MADE A CHANGE
+STATIC_ROOT = BASE_DIR / 'staticfiles'   #added  for deployment
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -166,7 +167,10 @@ SIMPLE_JWT = {
 #     'http://localhost:3000',
 #     'http://localhost:5173',
 # ]
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    'CORS_ALLOWED_ORIGINS',
+    'http://localhost:5173'
+).split(',') #ABOVE IS THE ACTUAL CODE, THIS ONE IS LATER PASTED
 
 
 # ── Fitbit API Configuration ──────────────────────────
