@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Card, MiniChart, Badge } from '../../components'
 import { useAuth } from '../../context/AuthContext'
 import healthService from '../../services/healthService'
+import { DEMO_LATEST, DEMO_SUMMARY, DEMO_RECORDS } from '../../services/demoData'
 import {
   HeartPulseIcon,
   ActivityIcon,
@@ -10,7 +11,7 @@ import {
   ThermometerIcon,
   TrendUpIcon,
 } from '../../components/icons'
-
+import ManualEntryModal from './ManualEntryModal'
 
 // ── Helpers ──────────────────────────────────────────
 
@@ -85,7 +86,10 @@ export default function DashboardPage() {
   const [summary, setSummary] = useState(null)
   const [records, setRecords] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(null)
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false)
+  const [deviceConnected, setDeviceConnected] = useState(() => localStorage.getItem('deviceConnected') === 'true')
+  const [demoActive, setDemoActive] = useState(() => localStorage.getItem('useDemo') === 'true')
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
@@ -97,9 +101,14 @@ export default function DashboardPage() {
         healthService.getRecords(),
       ])
 
-      if (latestData.status === 'fulfilled') setLatest(latestData.value)
-      if (summaryData.status === 'fulfilled') setSummary(summaryData.value)
-      if (recordsData.status === 'fulfilled') setRecords(recordsData.value.results || [])
+      const realLatest = latestData.status === 'fulfilled' ? latestData.value : null
+      const realSummary = summaryData.status === 'fulfilled' ? summaryData.value : null
+      const realRecords = recordsData.status === 'fulfilled' ? (recordsData.value.results || []) : []
+
+      // Use real data if available, otherwise fall back to demo data
+      setLatest(realLatest || DEMO_LATEST)
+      setSummary(realSummary?.record_count ? realSummary : DEMO_SUMMARY)
+      setRecords(realRecords.length > 0 ? realRecords : DEMO_RECORDS)
     } catch {
       setError('Failed to load health data.')
     } finally {
@@ -140,24 +149,92 @@ export default function DashboardPage() {
     )
   }
 
+  // ── Error State ──────────────────────
+  if (error && !latest) {
+    return (
+      <div className="text-center py-20 animate-scale-in">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-danger/10 flex items-center justify-center">
+          <svg className="w-8 h-8 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h3 className="text-base font-bold text-text-primary mb-1">Connection Error</h3>
+        <p className="text-sm text-text-muted mb-6 px-4">{error}</p>
+        <button 
+          onClick={fetchData} 
+          className="px-6 py-2.5 bg-primary text-white font-bold rounded-xl shadow-button hover:opacity-90 active:scale-95 transition-all text-[11px] uppercase tracking-widest"
+        >
+          Try Again
+        </button>
+      </div>
+    )
+  }
+
   // ── Empty State ──────────────────────
   if (!latest && !error) {
     return (
-      <div className="animate-slide-up text-center py-12">
-        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-          <HeartPulseIcon className="w-10 h-10 text-primary" />
+      <div className="animate-slide-up space-y-4">
+        {/* Friendly CTA Overlay */}
+        <div className="bg-gradient-to-br from-primary to-primary-dark rounded-[var(--radius-lg)] p-5 shadow-button relative overflow-hidden">
+          <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+          
+          <div className="relative z-10">
+            <h2 className="text-xl font-bold text-white mb-2">
+              No data yet — start tracking your health
+            </h2>
+            <p className="text-xs text-white/80 mb-5 max-w-[260px] leading-relaxed">
+              Connect a wearable device or start logging your vitals manually to see insights here.
+            </p>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.assign('/health')}
+                className="px-5 py-2.5 bg-white text-primary text-[11px] uppercase tracking-widest font-bold rounded-xl shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Add Data
+              </button>
+              <button
+                onClick={() => window.location.assign('/profile')}
+                className="px-5 py-2.5 bg-white/20 text-white text-[11px] uppercase tracking-widest font-bold rounded-xl hover:bg-white/30 active:scale-[0.98] transition-all"
+              >
+                Connect Device
+              </button>
+            </div>
+          </div>
         </div>
-        <h2 className="text-lg font-bold text-text-primary mb-1">No health data yet</h2>
-        <p className="text-sm text-text-muted mb-6 max-w-[250px] mx-auto">
-          Connect a wearable or manually add your first health reading to get started.
-        </p>
-        <button
-          onClick={fetchData}
-          className="px-6 py-2.5 bg-primary text-white text-sm font-semibold rounded-[var(--radius-md)]
-                     shadow-button hover:bg-primary-dark active:scale-[0.97] transition-all duration-200"
-        >
-          Refresh Data
-        </button>
+
+        {/* Demo / Skeleton Data to preserve UI structure */}
+        <div>
+          <h3 className="text-xs font-bold text-text-muted uppercase tracking-widest mb-3 ml-1">Example Dashboard</h3>
+          <div className="grid grid-cols-2 gap-3 opacity-[0.35] grayscale pointer-events-none select-none">
+            <Card
+              icon={<HeartPulseIcon className="w-5 h-5 text-danger" />}
+              iconBg="bg-danger/10"
+              title="Heart Rate"
+              value="72 bpm"
+              subtitle="Resting • 10m ago"
+            />
+            <Card
+              icon={<ActivityIcon className="w-4 h-4 text-accent" />}
+              iconBg="bg-accent/10"
+              title="Steps"
+              value="6,240"
+              subtitle="Today"
+            />
+            <Card
+              icon={<MoonIcon className="w-4 h-4 text-primary-light" />}
+              iconBg="bg-primary-light/10"
+              title="Sleep"
+              value="7h 20m"
+              subtitle="Last night"
+            />
+            <Card
+              icon={<DropletIcon className="w-4 h-4 text-blue-500" />}
+              iconBg="bg-blue-500/10"
+              title="SpO₂"
+              value="98%"
+              subtitle="Normal range"
+            />
+          </div>
+        </div>
       </div>
     )
   }
@@ -227,6 +304,104 @@ export default function DashboardPage() {
           trendValue={`${summary?.record_count || 0} readings`}
           subtitle="This week"
         />
+      </div>
+
+      {/* ── Connect Device ────────────────────── */}
+      <div className="bg-surface rounded-[var(--radius-lg)] p-4 shadow-card border border-border/50">
+        <div className="flex items-start gap-3.5 mb-3">
+          <div className={`w-10 h-10 rounded-[var(--radius-md)] flex items-center justify-center shrink-0
+            ${deviceConnected ? 'bg-success/10' : demoActive ? 'bg-primary/10' : 'bg-accent/10'}`}>
+            {deviceConnected ? (
+              <svg className="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : demoActive ? (
+              <svg className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            )}
+          </div>
+          <div className="flex-1">
+            <h3 className="text-sm font-bold text-text-primary">
+              {deviceConnected ? 'Device Connected' : demoActive ? 'Using Demo Data' : 'Connect your device'}
+            </h3>
+            <p className="text-xs text-text-muted mt-0.5 leading-relaxed">
+              {deviceConnected
+                ? 'Your wearable is syncing health data'
+                : demoActive
+                  ? 'Showing sample health metrics'
+                  : 'Connect your wearable or continue with demo data'}
+            </p>
+          </div>
+        </div>
+
+        {/* Default: neither active — show both options */}
+        {!deviceConnected && !demoActive && (
+          <div className="flex gap-2.5">
+            <button
+              onClick={() => {
+                localStorage.setItem('deviceConnected', 'true')
+                setDeviceConnected(true)
+                alert('Device connected successfully')
+              }}
+              className="flex-1 py-2.5 bg-primary text-white text-[11px] font-bold uppercase tracking-widest
+                         rounded-xl shadow-button hover:bg-primary-dark active:scale-[0.97] transition-all"
+            >
+              Connect Device
+            </button>
+            <button
+              onClick={() => {
+                localStorage.setItem('useDemo', 'true')
+                setDemoActive(true)
+                setLatest(DEMO_LATEST)
+                setSummary(DEMO_SUMMARY)
+                setRecords(DEMO_RECORDS)
+                alert('Demo data loaded')
+              }}
+              className="flex-1 py-2.5 bg-surface-elevated text-text-secondary text-[11px] font-bold uppercase tracking-widest
+                         rounded-xl border border-border hover:bg-surface hover:text-text-primary active:scale-[0.97] transition-all"
+            >
+              Use Demo Data
+            </button>
+          </div>
+        )}
+
+        {/* Device connected — show disconnect */}
+        {deviceConnected && (
+          <button
+            onClick={() => {
+              localStorage.removeItem('deviceConnected')
+              setDeviceConnected(false)
+              fetchData()
+              alert('Device disconnected')
+            }}
+            className="w-full py-2 bg-danger/10 text-danger text-[11px] font-bold uppercase tracking-widest
+                       rounded-xl border border-danger/20 hover:bg-danger/20 active:scale-[0.97] transition-all"
+          >
+            Disconnect
+          </button>
+        )}
+
+        {/* Demo active — show stop */}
+        {demoActive && (
+          <button
+            onClick={() => {
+              localStorage.removeItem('useDemo')
+              setDemoActive(false)
+              fetchData()
+              alert('Demo data stopped')
+            }}
+            className="w-full py-2 bg-warning/10 text-yellow-700 text-[11px] font-bold uppercase tracking-widest
+                       rounded-xl border border-warning/30 hover:bg-warning/20 active:scale-[0.97] transition-all"
+          >
+            Stop Demo
+          </button>
+        )}
       </div>
 
       {/* ── Heart Rate Chart ─────────────────── */}
@@ -324,6 +499,27 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+      
+      {/* ── FAB & Modal ──────────────────────── */}
+      <ManualEntryModal 
+        isOpen={isManualModalOpen} 
+        onClose={() => setIsManualModalOpen(false)} 
+        onSuccess={() => {
+          setIsManualModalOpen(false);
+          fetchData();
+        }} 
+      />
+
+      <button
+        onClick={() => setIsManualModalOpen(true)}
+        className="fixed bottom-[88px] right-6 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_8px_20px_rgba(108,92,231,0.4)] active:scale-95 transition-transform z-40 hover:bg-primary-dark group"
+      >
+        <svg className="w-6 h-6 group-hover:rotate-90 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </button>
+
     </div>
   )
 }

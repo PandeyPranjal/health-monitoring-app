@@ -161,17 +161,23 @@ export default function AlertsPage() {
 
       {/* Alert List */}
       {alerts.length === 0 ? (
-        <div className="text-center py-16 animate-scale-in">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-success/10
-                          flex items-center justify-center">
-            <CheckIcon className="w-8 h-8 text-success" />
+        <div className="animate-slide-up py-8">
+          <div className="bg-gradient-to-br from-success/80 to-success rounded-[var(--radius-xl)] p-6 shadow-button relative overflow-hidden text-center flex flex-col items-center">
+            <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-xl pointer-events-none" />
+            <div className="absolute -left-6 -bottom-6 w-24 h-24 bg-white/20 rounded-full blur-xl pointer-events-none" />
+            
+            <div className="relative z-10">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 bounce-in">
+                <CheckIcon className="w-8 h-8 text-white drop-shadow-sm" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2 drop-shadow-sm">
+                All Clear!
+              </h3>
+              <p className="text-sm text-white/90 max-w-[220px] mx-auto font-medium">
+                You have no active health alerts. Keep up the great work!
+              </p>
+            </div>
           </div>
-          <h3 className="text-base font-bold text-text-primary mb-1">
-            All clear!
-          </h3>
-          <p className="text-sm text-text-muted max-w-[220px] mx-auto">
-            No health alerts right now. Your vitals look great.
-          </p>
         </div>
       ) : (
         <div className="space-y-2.5">
@@ -226,6 +232,19 @@ export default function AlertsPage() {
                     <p className="text-xs text-text-muted mt-1 leading-relaxed line-clamp-2">
                       {alert.message}
                     </p>
+
+                    {/* Actionable Smart Alert CTA */}
+                    {(alert.severity === 'critical' || alert.severity === 'high' || alert.severity === 'warning') && (
+                      <div className="mt-2.5 mb-2">
+                        <button 
+                          onClick={() => window.location.assign('/appointments')}
+                          className="w-full py-2 bg-danger/10 hover:bg-danger/20 text-danger text-[11px] font-bold uppercase tracking-widest rounded-xl transition-colors border border-danger/20 shadow-sm active:scale-[0.98]"
+                        >
+                          Consult a Doctor Now
+                        </button>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-2 mt-2">
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5
                                        rounded-full ${severity.bg} ${severity.text}`}>

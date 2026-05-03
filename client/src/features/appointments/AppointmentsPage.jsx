@@ -3,7 +3,7 @@ import appointmentService from '../../services/appointmentService'
 import { Card, Button, Badge } from '../../components'
 import {
   CalendarIcon, ClockIcon, UserCircleIcon,
-  ChevronRightIcon, CheckIcon, StarIcon,
+  ChevronRightIcon, CheckIcon,
 } from '../../components/icons'
 import BookingModal from './BookingModal'
 
@@ -37,11 +37,13 @@ export default function AppointmentsPage() {
   const [myAppointments, setMyAppointments] = useState([])
   const [activeTab, setActiveTab] = useState('find') // 'find' | 'my'
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedDoctor, setSelectedDoctor] = useState(null)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
 
   const fetchData = useCallback(async () => {
     setIsLoading(true)
+    setError(null)
     try {
       const [docs, appts] = await Promise.all([
         appointmentService.getDoctors(),
@@ -49,8 +51,11 @@ export default function AppointmentsPage() {
       ])
       setDoctors(docs.results || [])
       setMyAppointments(appts.results || [])
-    } catch { /* ignore */ }
-    finally { setIsLoading(false) }
+    } catch (err) {
+      setError('Failed to load appointments profile. Please check your connection.')
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -76,6 +81,21 @@ export default function AppointmentsPage() {
           <div className="flex-1 h-9 rounded-full shimmer-bg" />
         </div>
         {[...Array(3)].map((_, i) => <DoctorSkeleton key={i} />)}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20 animate-scale-in">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-danger/10 flex items-center justify-center">
+          <svg className="w-8 h-8 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+        </div>
+        <h3 className="text-base font-bold text-text-primary mb-1">Connection Error</h3>
+        <p className="text-sm text-text-muted mb-6">{error}</p>
+        <Button variant="primary" onClick={fetchData} className="px-6 rounded-xl shadow-button hover:opacity-90 active:scale-95 transition-all">
+          Try Again
+        </Button>
       </div>
     )
   }
@@ -109,9 +129,19 @@ export default function AppointmentsPage() {
       {activeTab === 'find' && (
         <div className="space-y-3">
           {doctors.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-sm text-text-muted">No doctors found.</p>
+            <div className="text-center py-20 animate-scale-in bg-surface rounded-[var(--radius-xl)] shadow-card border border-border/50">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/5 flex items-center justify-center">
+                <UserCircleIcon className="w-8 h-8 text-primary/40" />
+              </div>
+              <h3 className="text-base font-bold text-text-primary mb-1">No doctors found</h3>
+              <p className="text-sm text-text-muted max-w-[200px] mx-auto mb-6">
+                We couldn't locate any available specialists at this time.
+              </p>
+              <Button variant="outlined" onClick={fetchData} className="rounded-xl text-xs shadow-sm">
+                Refresh Directory
+              </Button>
             </div>
+
           ) : (
             doctors.map((doctor, i) => (
               <div
@@ -133,7 +163,7 @@ export default function AppointmentsPage() {
                       Dr. {doctor.name}
                     </h3>
                     <div className="flex items-center gap-1 shrink-0 bg-warning/10 px-1.5 py-0.5 rounded-lg">
-                      <StarIcon className="w-3 h-3 text-warning fill-warning" />
+                      <span className="text-yellow-500 text-xs">★</span>
                       <span className="text-[10px] font-bold text-yellow-700">{doctor.rating || '5.0'}</span>
                     </div>
                   </div>
@@ -200,8 +230,8 @@ export default function AppointmentsPage() {
                   </div>
                   <Badge variant={
                     appt.status === 'confirmed' ? 'success' :
-                    appt.status === 'pending' ? 'warning' :
-                    appt.status === 'completed' ? 'default' : 'danger'
+                      appt.status === 'pending' ? 'warning' :
+                        appt.status === 'completed' ? 'default' : 'danger'
                   }>
                     {appt.status}
                   </Badge>
@@ -251,12 +281,3 @@ export default function AppointmentsPage() {
   )
 }
 
-// Missing StarIcon in icon index
-function StarIcon({ className = 'w-5 h-5' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
-}

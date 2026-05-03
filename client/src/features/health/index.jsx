@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import healthService from '../../services/healthService'
+import { DEMO_LATEST, DEMO_SUMMARY, DEMO_RECORDS } from '../../services/demoData'
 import { Card, MiniChart, Button } from '../../components'
 import {
   HeartPulseIcon, ActivityIcon, DropletIcon, MoonIcon,
-  ThermometerIcon, RefreshIcon, PlusIcon,
+  ThermometerIcon, RefreshIcon,
 } from '../../components/icons'
+
+import { Plus } from 'lucide-react'
 import AddRecordModal from './AddRecordModal'
 
 function formatDate(iso) {
@@ -73,9 +76,13 @@ export default function HealthPage() {
         healthService.getSummary(period),
         healthService.getRecords(),
       ])
-      if (latestRes.status === 'fulfilled') setLatest(latestRes.value)
-      if (summaryRes.status === 'fulfilled') setSummary(summaryRes.value)
-      if (recordsRes.status === 'fulfilled') setRecords(recordsRes.value.results || [])
+      const realLatest = latestRes.status === 'fulfilled' ? latestRes.value : null
+      const realSummary = summaryRes.status === 'fulfilled' ? summaryRes.value : null
+      const realRecords = recordsRes.status === 'fulfilled' ? (recordsRes.value.results || []) : []
+
+      setLatest(realLatest || DEMO_LATEST)
+      setSummary(realSummary?.record_count ? realSummary : DEMO_SUMMARY)
+      setRecords(realRecords.length > 0 ? realRecords : DEMO_RECORDS)
     } catch { /* ignore */ }
     finally { setIsLoading(false) }
   }, [period])
@@ -104,13 +111,13 @@ export default function HealthPage() {
                    shadow-xl flex items-center justify-center z-40 
                    hover:scale-110 active:scale-95 transition-all duration-300 animate-bounce-in"
       >
-        <PlusIcon className="w-8 h-8" />
+        <Plus className="w-8 h-8" />
       </button>
 
       {/* Add Record Modal */}
-      <AddRecordModal 
-        isOpen={isAddModalOpen} 
-        onClose={() => setIsAddModalOpen(false)} 
+      <AddRecordModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
         onSuccess={handleAddSuccess}
       />
 
@@ -177,10 +184,10 @@ export default function HealthPage() {
         </div>
       ) : (
         <div className="bg-surface rounded-[var(--radius-lg)] p-8 text-center border-2 border-dashed border-border/50">
-           <p className="text-sm text-text-muted">No measurements today.</p>
-           <Button variant="outlined" size="sm" className="mt-4 rounded-xl" onClick={() => setIsAddModalOpen(true)}>
-              Log Vitals Now
-           </Button>
+          <p className="text-sm text-text-muted">No measurements today.</p>
+          <Button variant="outlined" size="sm" className="mt-4 rounded-xl" onClick={() => setIsAddModalOpen(true)}>
+            Log Vitals Now
+          </Button>
         </div>
       )}
 

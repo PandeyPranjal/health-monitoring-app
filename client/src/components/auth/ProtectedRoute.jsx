@@ -1,12 +1,13 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
 /**
  * ProtectedRoute — redirects to /login if not authenticated.
- * Shows a loading spinner while checking auth state.
+ * Also redirects to /onboarding if profile is incomplete.
  */
 export default function ProtectedRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
+  const location = useLocation()
 
   if (isLoading) {
     return (
@@ -18,6 +19,11 @@ export default function ProtectedRoute({ children }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
+  }
+
+  // Enforce onboarding
+  if (user && !user.onboarding_completed && location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />
   }
 
   return children

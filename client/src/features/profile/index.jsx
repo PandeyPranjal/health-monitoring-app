@@ -6,8 +6,10 @@ import fitbitService from '../../services/fitbitService'
 import {
   ProfileIcon, MoonIcon, SunIcon, WifiIcon,
   ShieldIcon, HeartPulseIcon, LogOutIcon, ChevronRightIcon,
-  RefreshIcon, CheckIcon,
+  RefreshIcon, CheckIcon, XIcon
 } from '../../components/icons'
+import WearableConnect from './WearableConnect'
+import EditProfileModal from './EditProfileModal'
 
 function SettingsRow({ icon, iconBg, label, sublabel, onClick, trailing, disabled = false }) {
   return (
@@ -41,6 +43,7 @@ export default function ProfilePage() {
   const [fitbitStatus, setFitbitStatus] = useState(null)
   const [isSyncing, setIsSyncing] = useState(false)
   const [message, setMessage] = useState(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
 
   const fetchFitbitStatus = useCallback(async () => {
     try {
@@ -123,11 +126,23 @@ export default function ProfilePage() {
         </div>
       )}
 
+      <EditProfileModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} />
+
       {/* Profile Card */}
       <div className="bg-surface rounded-[var(--radius-xl)] shadow-card overflow-hidden">
         <div className="bg-gradient-to-br from-primary to-primary-dark px-5 pt-8 pb-10 text-center relative">
           <div className="absolute top-3 left-5 w-16 h-16 bg-white/5 rounded-full" />
           <div className="absolute bottom-4 right-8 w-10 h-10 bg-white/5 rounded-full" />
+
+          <button 
+            onClick={() => setIsEditModalOpen(true)}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur flex items-center justify-center hover:bg-white/30 transition-colors cursor-pointer z-10"
+          >
+            <svg className="w-4 h-4 text-white drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20h9" />
+              <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+            </svg>
+          </button>
 
           <div className="w-20 h-20 mx-auto rounded-full bg-white/20 backdrop-blur
                           flex items-center justify-center mb-3 bounce-in border border-white/30">
@@ -174,40 +189,13 @@ export default function ProfilePage() {
         />
       </div>
 
-      <div className="bg-surface rounded-[var(--radius-xl)] shadow-card overflow-hidden divide-y divide-border">
-        <p className="px-4 pt-4 pb-2 text-[10px] font-bold text-text-muted uppercase tracking-widest bg-surface-elevated/50">
-          Integrations
-        </p>
-        <SettingsRow
-          icon={<WifiIcon className={`w-4 h-4 ${fitbitStatus?.connected ? 'text-accent' : 'text-text-muted'}`} />}
-          iconBg={fitbitStatus?.connected ? 'bg-accent/10' : 'bg-surface-elevated'}
-          label="Fitbit"
-          sublabel={fitbitStatus?.connected ? `Connected (${fitbitStatus.fitbit_user_id})` : "Connect your device"}
-          onClick={fitbitStatus?.connected ? handleFitbitSync : handleFitbitConnect}
-          disabled={isSyncing}
-          trailing={
-            fitbitStatus?.connected ? (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleFitbitSync(); }}
-                  className={`w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center transition-all
-                             ${isSyncing ? 'animate-spin' : 'hover:bg-accent/20 active:scale-90'}`}
-                >
-                  <RefreshIcon className="w-3.5 h-3.5 text-accent" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleFitbitDisconnect(); }}
-                  className="w-8 h-8 rounded-full bg-danger/10 flex items-center justify-center hover:bg-danger/20 active:scale-90"
-                >
-                  <XIcon className="w-3.5 h-3.5 text-danger" />
-                </button>
-              </div>
-            ) : (
-              <Badge variant="muted">Not Connected</Badge>
-            )
-          }
-        />
-      </div>
+      <WearableConnect
+        fitbitStatus={fitbitStatus}
+        isSyncing={isSyncing}
+        onFitbitConnect={handleFitbitConnect}
+        onFitbitSync={handleFitbitSync}
+        onFitbitDisconnect={handleFitbitDisconnect}
+      />
 
       {/* Logout */}
       <button
@@ -226,15 +214,5 @@ export default function ProfilePage() {
         HealthPulse v1.1.0 • Built with ❤️ for your health
       </p>
     </div>
-  )
-}
-
-function XIcon({ className = 'w-5 h-5' }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
   )
 }

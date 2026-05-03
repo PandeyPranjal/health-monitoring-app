@@ -64,6 +64,28 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
+  // ── Session Expiry Event Listener ──────────────────
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      authService.clearTokens()
+      setUser(null)
+    }
+    window.addEventListener('auth:session-expired', handleSessionExpired)
+    return () => window.removeEventListener('auth:session-expired', handleSessionExpired)
+  }, [])
+
+  // ── Refresh Profile ────────────────────────────────
+  const refreshProfile = useCallback(async () => {
+    try {
+      const profile = await authService.getProfile()
+      setUser(profile)
+      return profile
+    } catch (err) {
+      console.error('Failed to refresh profile:', err)
+      throw err
+    }
+  }, [])
+
   const value = {
     user,
     isLoading,
@@ -71,6 +93,7 @@ export function AuthProvider({ children }) {
     login,
     register,
     logout,
+    refreshProfile,
   }
 
   return (
