@@ -14,6 +14,7 @@ export default function SignupPage() {
     last_name: '',
     password: '',
     password_confirm: '',
+    phone_number: '',
   })
   const [errors, setErrors] = useState({})
   const [generalError, setGeneralError] = useState('')
