@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,12 +49,12 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware', 
     'django.middleware.csrf.CsrfViewMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -126,7 +127,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'   #HERE IS MADE A CHANGE
+STATIC_URL = '/static/'   #HERE IS MADE A CHANGE
 STATIC_ROOT = BASE_DIR / 'staticfiles'   #added  for deployment
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
@@ -166,13 +167,19 @@ SIMPLE_JWT = {
 
 # CORS Settings
 # CORS_ALLOWED_ORIGINS = [
-#     'http://localhost:3000',
+#     'http://localhost:3000',###
 #     'http://localhost:5173',
 # ]
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:5173'
-).split(',') #ABOVE IS THE ACTUAL CODE, THIS ONE IS LATER PASTED
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$", #this is completely changed as for the deployment
+]
+
+ #ABOVE IS THE ACTUAL CODE, THIS ONE IS LATER PASTED
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-timezone',
+]
 
 
 # ── Fitbit API Configuration ──────────────────────────
