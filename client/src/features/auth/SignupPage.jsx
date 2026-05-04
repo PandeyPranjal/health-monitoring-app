@@ -57,10 +57,12 @@ export default function SignupPage() {
         if (hasFieldErrors) {
           setErrors(fieldErrors)
         } else {
-          setGeneralError('Registration failed. Please try again.')
+          // setGeneralError('Registration failed. Please try again.')
+          setGeneralError(JSON.stringify(data))
         }
       } else {
-        setGeneralError('Registration failed. Please try again.')
+        // setGeneralError('Registration failed. Please try again.')
+        setGeneralError(err.response?.data?.detail || 'Registration failed')
       }
     } finally {
       setIsSubmitting(false)
