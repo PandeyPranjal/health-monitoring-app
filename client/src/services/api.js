@@ -15,6 +15,11 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
+    // Fix Axios URL resolution: ensure /api prefix is present
+    if (config.url && !config.url.startsWith('/api')) {
+      config.url = `/api${config.url.startsWith('/') ? '' : '/'}${config.url}`
+    }
+
     // Automatically attach user's local timezone
     try {
       config.headers['X-Timezone'] = Intl.DateTimeFormat().resolvedOptions().timeZone
