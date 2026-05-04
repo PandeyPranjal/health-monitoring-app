@@ -2,6 +2,15 @@
 
 HealthPulse is a mobile-first full-stack health monitoring web application that allows users to track health metrics, simulate wearable device integration, and manage doctor appointments.
 
+## Screenshots
+
+<div align="center">
+  <img src="screenshots/dashboard.png" width="200" alt="Dashboard" />
+  <img src="screenshots/health.png" width="200" alt="Health Tracking" />
+  <img src="screenshots/profile.png" width="200" alt="Profile" />
+  <img src="screenshots/alerts.png" width="200" alt="Alerts" />
+</div>
+
 ## Features
 
 - User authentication (JWT-based)
