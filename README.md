@@ -7,7 +7,7 @@ HealthPulse is a full-stack, mobile-first health monitoring web application that
 ## 🌐 Live Demo
 
 * **Frontend (Vercel):** [https://health-monitoring-app-w9qj.vercel.app](https://health-monitoring-app-w9qj.vercel.app/)
-* **Backend (Render API):** [https://pulsehealth-backend-ipmi.onrender.com](https://pulsehealth-backend-ipmi.onrender.com)
+* **Backend (Render API):** [https://pulsehealth-backend-ipmi.onrender.com/api/users/login/](https://pulsehealth-backend-ipmi.onrender.com/api/users/login/)
 
 ⚠️ **Note:**
 The backend is hosted on Render (free tier).
